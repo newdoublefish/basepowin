@@ -9,6 +9,15 @@ from django.db.models.signals import post_save, post_delete, pre_save
 from django.contrib.auth import get_user_model
 
 
+class Department(models.Model):
+    name = models.CharField(u'部门', max_length=32, null=True)
+    parent = models.ForeignKey('self', verbose_name='上级部门', null=True, blank=True, related_name='child', on_delete=models.CASCADE)
+    admins = models.ManyToManyField(to='UserProfile', verbose_name="管理员")
+
+    def __str__(self):
+        return "%s" % self.name
+
+
 class Role(models.Model):
     name = models.CharField(u'职位', max_length=32, null=True)
     groups = models.ManyToManyField(to=Group, verbose_name="权限组")
@@ -19,7 +28,6 @@ class Role(models.Model):
 
 @receiver(post_save, sender=Role)
 def sync_auth(sender, instance=None, created=False, **kwargs):
-    print("----------sync_auth---------")
     user_model = get_user_model()
     users = user_model.objects.all().filter(role=instance)
     for user in users:
@@ -33,6 +41,7 @@ def sync_auth(sender, instance=None, created=False, **kwargs):
 class UserProfile(AbstractUser):
     mobile = models.CharField(u'手机', max_length=11, null=True)
     role = models.ManyToManyField('Role', verbose_name='职位')
+    dept = models.ForeignKey(Department, null=True, blank=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return "%s%s" % (self.last_name, self.first_name)
