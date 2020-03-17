@@ -33,11 +33,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'user',
     'xadmin',
     'rest_framework_swagger',
     'django_json_widget',
     'rest_framework',
     'rest_framework.authtoken',
+    'crispy_forms',
+    'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -164,6 +167,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+AUTH_USER_MODEL = "user.UserProfile"
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "collect_static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "static_file/")
