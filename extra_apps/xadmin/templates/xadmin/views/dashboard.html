@@ -17,12 +17,12 @@
     {% endif %}
 {% endblock %}
 
-{#{% block nav_btns %}#}
-{#{% if has_add_widget_permission %}#}
-{#  <a title="{% trans "Add Widget" %}" href="{{ add_widget_url }}" class="btn btn-primary">#}
-{#    <i class="fa fa-plus"></i> <span>{% trans "Add Widget" %}</span></a>#}
-{#{% endif %}#}
-{#{% endblock %}#}
+{% block nav_btns %}
+{% if has_add_widget_permission %}
+  <a title="{% trans "Add Widget" %}" href="{{ add_widget_url }}" class="btn btn-primary">
+    <i class="fa fa-plus"></i> <span>{% trans "Add Widget" %}</span></a>
+{% endif %}
+{% endblock %}
 
 {% block content %}
     <div class="dashboard row">
