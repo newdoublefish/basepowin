@@ -25,6 +25,11 @@
 {% endblock %}
 
 {% block content %}
+    {% if is_redirect %}
+        <iframe id="mainIframe" name="mainIframe"
+                style="width: 100%;margin-top: -1%" frameborder="no"
+                border="0" scrolling="no" src="{{ redirect_url }}"></iframe>
+    {% endif %}
     <div class="dashboard row">
         {% for c in columns %}
             <div class="{{ c.0 }} column">
@@ -35,13 +40,6 @@
         {% endfor %}
 
     </div>
-    {% if is_redirect %}
-{#        <iframe src="{{ redirect_url }}" scrolling="no" id="mainFrame" frameborder="0" style="width:100%"#}
-{#                οnlοad="setHeight(this)"></iframe>#}
-        <iframe id="mainIframe" name="mainIframe"
-                style="width: 100%;margin-top: -1%" frameborder="no"
-                border="0" scrolling="no" src="{{ redirect_url }}"></iframe>
-    {% endif %}
     <script type="text/javascript">
 
         var timeIframe;
