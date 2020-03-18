@@ -17,6 +17,10 @@ class Department(models.Model):
     def __str__(self):
         return "%s" % self.name
 
+    class Meta:
+        verbose_name = u'部门管理'
+        verbose_name_plural = u'部门管理'
+
 
 class Role(models.Model):
     name = models.CharField(u'职位', max_length=32, null=True)
@@ -24,6 +28,10 @@ class Role(models.Model):
 
     def __str__(self):
         return "%s" % self.name
+
+    class Meta:
+        verbose_name = u'职位管理'
+        verbose_name_plural = u'职位管理'
 
 
 @receiver(post_save, sender=Role)
@@ -53,6 +61,10 @@ class UserProfile(AbstractUser):
             self.groups.clear()
             self.groups.add(*group_set)
         return super(UserProfile, self).save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = u'用户管理'
+        verbose_name_plural = u'用户管理'
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

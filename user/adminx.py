@@ -3,6 +3,7 @@ from .models import Role, UserProfile, Department
 from django.contrib.auth.forms import (UserCreationForm, UserChangeForm,
                                        AdminPasswordChangeForm, PasswordChangeForm)
 from xadmin.layout import Fieldset, Main, Side, Row, FormHelper
+from xadmin import views
 
 
 class UserProfilesAdmin(object):
@@ -11,7 +12,7 @@ class UserProfilesAdmin(object):
     list_filter = ('is_staff', 'is_superuser', 'is_active')
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('username',)
-    style_fields = {'user_permissions': 'm2m_transfer'}
+    style_fields = {'user_permissions': 'm2m_transfer', 'role': 'm2m_transfer'}
     model_icon = 'fa fa-user'
     relfield_style = 'fk-ajax'
     exclude = ('user_permissions', 'groups')
@@ -37,14 +38,14 @@ class UserProfilesAdmin(object):
                              'username', 'password',
                              css_class='unsort no_title'
                              ),
-                    Fieldset('Personal info',
+                    Fieldset('个人信息',
                              Row('first_name', 'last_name'),
                              'email'
                              ),
                     # Fieldset('Permissions',
                     #          'groups', 'user_permissions'
                     #          ),
-                    Fieldset('Important dates',
+                    Fieldset('时间信息',
                              'last_login', 'date_joined'
                              ),
                 ),
@@ -63,16 +64,29 @@ class RoleAdmin(object):
     filter_horizontal = ('groups',)
     # 多对多穿梭框样式
     style_fields = {'groups': 'm2m_transfer'}
+    model_icon = 'fa fa-credit-card'
 
 
 class DepartmentAdmin(object):
     list_display = ('id', 'name', 'parent')
     filter_horizontal = ('admins',)
     style_fields = {'admins': 'm2m_transfer'}
+    model_icon = 'fa fa-group '
 
 
+class GlobalSettings(object):
+    """xadmin的全局配置"""
+    site_title = "MCMC"  # 设置站点标题
+    site_footer = "copyright mcmc 2020"  # 设置站点的页脚
+    # menu_style = "accordion"  # 设置菜单折叠，在左侧，默认的
+    # 设置models的全局图标, UserProfile, Sports 为表名
+    global_search_models = [UserProfile,]
+    global_models_icon = {
+        UserProfile: "glyphicon glyphicon-user", }
+
+
+xadmin.site.register(views.CommAdminView, GlobalSettings)
 xadmin.site.register(Role, RoleAdmin)
 xadmin.site.register(Department, DepartmentAdmin)
 xadmin.site.unregister(UserProfile)
 xadmin.site.register(UserProfile, UserProfilesAdmin)
-
