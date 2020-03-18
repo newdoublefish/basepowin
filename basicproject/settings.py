@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'user',
+    'dashboard',
     'xadmin',
     'rest_framework_swagger',
     'django_json_widget',
