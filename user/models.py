@@ -11,8 +11,9 @@ from django.contrib.auth import get_user_model
 
 class Department(models.Model):
     name = models.CharField(u'部门', max_length=32, null=True)
-    parent = models.ForeignKey('self', verbose_name='上级部门', null=True, blank=True, related_name='child', on_delete=models.CASCADE)
-    admins = models.ManyToManyField(to='UserProfile', verbose_name="管理员")
+    parent = models.ForeignKey('self', verbose_name='上级部门', null=True, blank=True, related_name='child',
+                               on_delete=models.CASCADE)
+    admins = models.ManyToManyField(to='UserProfile', verbose_name="管理员", blank=True)
 
     def __str__(self):
         return "%s" % self.name
@@ -24,7 +25,7 @@ class Department(models.Model):
 
 class Role(models.Model):
     name = models.CharField(u'职位', max_length=32, null=True)
-    groups = models.ManyToManyField(to=Group, verbose_name="权限组")
+    groups = models.ManyToManyField(to=Group, verbose_name="权限组", blank=True)
 
     def __str__(self):
         return "%s" % self.name
@@ -48,19 +49,20 @@ def sync_auth(sender, instance=None, created=False, **kwargs):
 
 class UserProfile(AbstractUser):
     mobile = models.CharField(u'手机', max_length=11, null=True)
-    role = models.ManyToManyField('Role', verbose_name='职位')
-    dept = models.ForeignKey(Department, null=True, blank=True, on_delete=models.DO_NOTHING)
+    role = models.ManyToManyField('Role', verbose_name='职位', blank=True)
+    dept = models.ForeignKey(Department, blank=True, null=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return "%s%s" % (self.last_name, self.first_name)
 
     def save(self, *args, **kwargs):
+        super(UserProfile, self).save(*args, **kwargs)
         if self.role is not None:
             role_list = self.role.all()
             group_set = {group for role in role_list for group in role.groups.all()}
             self.groups.clear()
             self.groups.add(*group_set)
-        return super(UserProfile, self).save(*args, **kwargs)
+            super(UserProfile, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = u'用户管理'
@@ -71,4 +73,3 @@ class UserProfile(AbstractUser):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-
