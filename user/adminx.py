@@ -61,9 +61,9 @@ class UserProfilesAdmin(object):
 class RoleAdmin(object):
     list_display = ('id', 'name')
     # 多对多样式字段支持过滤
-    filter_horizontal = ('groups',)
+    filter_horizontal = ('permissions',)
     # 多对多穿梭框样式
-    style_fields = {'groups': 'm2m_transfer'}
+    style_fields = {'permissions': 'm2m_transfer'}
     model_icon = 'fa fa-credit-card'
 
 
@@ -80,7 +80,7 @@ class GlobalSettings(object):
     site_footer = "copyright mcmc 2020"  # 设置站点的页脚
     # menu_style = "accordion"  # 设置菜单折叠，在左侧，默认的
     # 设置models的全局图标, UserProfile, Sports 为表名
-    global_search_models = [UserProfile,]
+    global_search_models = [UserProfile, ]
     global_models_icon = {
         UserProfile: "glyphicon glyphicon-user", }
 

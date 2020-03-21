@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.db.models.signals import post_save, post_delete
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.contrib.auth import get_user_model
 
@@ -25,7 +25,7 @@ class Department(models.Model):
 
 class Role(models.Model):
     name = models.CharField(u'职位', max_length=32, null=True)
-    groups = models.ManyToManyField(to=Group, verbose_name="权限组", blank=True)
+    permissions = models.ManyToManyField(to=Permission, verbose_name="权限组", blank=True)
 
     def __str__(self):
         return "%s" % self.name
@@ -41,9 +41,9 @@ def sync_auth(sender, instance=None, created=False, **kwargs):
     users = user_model.objects.all().filter(role=instance)
     for user in users:
         role_list = user.role.all()
-        group_set = {group for role in role_list for group in role.groups.all()}
-        user.groups.clear()
-        user.groups.add(*group_set)
+        user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
+        user.user_permissions.clear()
+        user.user_permissions.add(*user_permissions_set)
         user.save()
 
 
@@ -59,9 +59,9 @@ class UserProfile(AbstractUser):
         super(UserProfile, self).save(*args, **kwargs)
         if self.role is not None:
             role_list = self.role.all()
-            group_set = {group for role in role_list for group in role.groups.all()}
-            self.groups.clear()
-            self.groups.add(*group_set)
+            user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
+            self.user_permissions.clear()
+            self.user_permissions.add(*user_permissions_set)
             super(UserProfile, self).save(*args, **kwargs)
 
     class Meta:
