@@ -6,15 +6,15 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block nav_title %}
-  {% if icon %}<i class="{{icon}}"></i>{%endif%} {{ title }}
+    {% if icon %}<i class="{{ icon }}"></i>{% endif %} {{ title }}
 {% endblock %}
 
 {% block nav_toggles %}
-{% include "xadmin/includes/toggle_menu.html" %}
-{% if has_add_widget_permission %}
-  <a title="{% trans "Add Widget" %}" href="{{ add_widget_url }}" class="navbar-toggle pull-right">
-    <i class="fa fa-plus"></i></a>
-{% endif %}
+    {% include "xadmin/includes/toggle_menu.html" %}
+    {% if has_add_widget_permission %}
+        <a title="{% trans "Add Widget" %}" href="{{ add_widget_url }}" class="navbar-toggle pull-right">
+            <i class="fa fa-plus"></i></a>
+    {% endif %}
 {% endblock %}
 
 {% block nav_btns %}
@@ -25,14 +25,46 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard row">
-  {% for c in columns %}
-  <div class="{{ c.0 }} column">
-    {% for widget in c.1 %}
-      {{ widget.widget|safe }}
-    {% endfor %}
-  </div>
-  {% endfor %}
-</div>
-<input type='hidden' id='_portal_key' value='{{ portal_key }}' />
+    {% if is_redirect %}
+        <iframe id="mainIframe" name="mainIframe"
+                style="width: 100%;margin-top: -1%" frameborder="no"
+                border="0" scrolling="no" src="{{ redirect_url }}"></iframe>
+    {% endif %}
+    <div class="dashboard row">
+        {% for c in columns %}
+            <div class="{{ c.0 }} column">
+                {% for widget in c.1 %}
+                    {{ widget.widget|safe }}
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+    </div>
+    <script type="text/javascript">
+
+        var timeIframe;
+        window.onload = function () {
+            timeIframe = setTimeout(GetIframeStatus, 10);
+        }
+
+        function GetIframeStatus() {
+            var iframe = document.getElementById("mainIframe");
+            var iframeWindow = iframe.contentWindow;
+            //内容是否加载完
+            if (iframeWindow.document.readyState == "complete") {
+                var iframeWidth, iframeHeight;
+                //获取Iframe的内容实际宽度
+                iframeWidth = iframeWindow.document.documentElement.scrollWidth;
+                //获取Iframe的内容实际高度
+                iframeHeight = iframeWindow.document.documentElement.scrollHeight;
+                //设置Iframe的宽度
+                iframe.width = iframeWidth;
+                //设置Iframe的高度
+                iframe.height = iframeHeight;
+            } else {
+                timeIframe = setTimeout(GetIframeStatus, 10);
+            }
+        }
+    </script>
+    <input type='hidden' id='_portal_key' value='{{ portal_key }}'/>
 {% endblock %}
