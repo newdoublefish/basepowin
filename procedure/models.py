@@ -1,6 +1,7 @@
 from django.db import models
 from user.models import Department, UserProfile
 from django.utils import timezone
+from .common import ReceiptStatus
 
 
 # Create your models here.
@@ -42,7 +43,9 @@ class Procedure(models.Model):
     part_no_name = models.CharField(u'图号', max_length=32, null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, verbose_name='上一个工序', null=True, blank=True, )
     dept = models.ForeignKey(Department, verbose_name="部门", blank=True, null=True, on_delete=models.DO_NOTHING)
-    quantity = models.IntegerField(u'数量', null=True, blank=True)
+    quantity = models.IntegerField(u'完成数量', null=True, blank=True)
+    received_quantity = models.IntegerField(u'接收数量', null=True, blank=True)
+    delivered_quantity = models.IntegerField(u'发出数量', null=True, blank=True)
     status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
     created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
     updated_at = models.DateTimeField(u'更新时间', null=True, blank=True)
@@ -57,10 +60,18 @@ class Procedure(models.Model):
 
 class Receipt(models.Model):
     STATUS_CHOICES = (
-        (0, '未开始'),
-        (1, '已发送'),
-        (2, '已接收'),
+        (ReceiptStatus.UN_KNOW, '未开始'),
+        (ReceiptStatus.DELIVERED, '已发送'),
+        (ReceiptStatus.RECEIVED, '已接收'),
     )
+
+    TYPES_DELIVER = (
+        (0, '未定义'),
+        (1, '正常'),
+        (2, '反工'),
+    )
+
+    deliver_type = models.IntegerField(u"类型", choices=TYPES_DELIVER, default=0)
     dept = models.ForeignKey(Department, verbose_name="部门", blank=True, null=True, on_delete=models.DO_NOTHING)
     deliver_procedure = models.ForeignKey(Procedure, verbose_name="发送工序", blank=True, null=True,
                                           on_delete=models.DO_NOTHING, related_name="deliver_procedure")

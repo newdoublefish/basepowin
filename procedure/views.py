@@ -10,6 +10,9 @@ import django_filters
 from .serializers import MopSerializer, ProcedureSerializer, ReceiptSerializer, TaskSerializer
 from .models import Mop, Procedure, Receipt, Task
 from django.db import transaction
+from django.utils import timezone
+from .common import ReceiptStatus
+import json
 
 
 # 耗时操作，可以考虑放到异步中执行
@@ -94,6 +97,21 @@ class ProcedureViewSet(GenericViewSet,
         pass
 
 
+def fill_receipt(receipt=None):
+    if receipt.receiver_procedure.mop != receipt.deliver_procedure.mop:
+        raise Exception("不在一个制定单内的两个工序")
+    receipt.deliver_procedure_name = receipt.deliver_procedure.name
+    receipt.receiver_procedure_name = receipt.receiver_procedure.name
+    # 正常
+    if receipt.deliver_procedure == receipt.receiver_procedure.parent:
+        receipt.deliver_type = 1
+    # 反工
+    elif receipt.deliver_procedure.parent == receipt.receiver_procedure:
+        receipt.deliver_type = 2
+    receipt.create_at = timezone.now()
+    receipt.save()
+
+
 class ReceiptViewSet(GenericViewSet,
                      mixins.ListModelMixin,
                      mixins.CreateModelMixin,
@@ -104,18 +122,50 @@ class ReceiptViewSet(GenericViewSet,
     serializer_class = ReceiptSerializer
     filterset_fields = ('deliver_procedure', 'receiver_procedure')
 
-    def perform_create(self, serializer):
-        serializer.validated_data['deliver_procedure_name'] = serializer.validated_data['deliver_procedure'].name
-        serializer.validated_data['receiver_procedure_name'] = serializer.validated_data['receiver_procedure'].name
-        super().perform_create(serializer)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                instance = serializer.save()
+                fill_receipt(instance)
+                print(instance.id)
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['get'])
     def deliver(self, request, pk=None):
-        pass
+        try:
+            receipt = self.get_object()
+            if receipt.status != ReceiptStatus.UN_KNOW:
+                raise Exception("该接收单处于%s状态" % receipt.get_status_display())
+
+            receipt.delivered_at = timezone.now()
+            receipt.deliver = request.user
+            receipt.status = ReceiptStatus.DELIVERED
+            receipt.save()
+        except Exception as e:
+            return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def receive(self, request, pk=None):
-        pass
+        try:
+            receipt = self.get_object()
+            if receipt.status != ReceiptStatus.DELIVERED:
+                raise Exception("该接收单处于%s状态" % receipt.get_status_display())
+            receipt.received_at = timezone.now()
+            receipt.receiver = request.user
+            receipt.status = ReceiptStatus.RECEIVED
+            receipt.save()
+        except Exception as e:
+            return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
 
 
 class TaskViewSet(GenericViewSet,
