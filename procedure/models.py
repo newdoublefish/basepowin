@@ -55,11 +55,26 @@ class Procedure(models.Model):
 
 
 class Receipt(models.Model):
+    STATUS_CHOICES = (
+        (0, '未开始'),
+        (1, '已发送'),
+        (2, '已接收'),
+    )
     dept = models.ForeignKey(Department, verbose_name="部门", blank=True, null=True, on_delete=models.DO_NOTHING)
-    procedure = models.ForeignKey(Procedure, verbose_name="工序", blank=True, null=True, on_delete=models.DO_NOTHING)
+    deliver_procedure = models.ForeignKey(Procedure, verbose_name="发送工序", blank=True, null=True,
+                                          on_delete=models.DO_NOTHING, related_name="deliver_procedure")
+    deliver_procedure_name = models.CharField(u'发送工序', max_length=32, null=True, blank=True)
+    receiver_procedure = models.ForeignKey(Procedure, verbose_name="接收工序", blank=True, null=True,
+                                           on_delete=models.DO_NOTHING, related_name="receiver_procedure")
+    receiver_procedure_name = models.CharField(u'接收工序', max_length=32, null=True, blank=True)
     quantity = models.IntegerField(u'交接数量', null=True, blank=True)
-    total = models.IntegerField(u'数量', null=True, blank=True)
-    created_at = models.DateTimeField(u'创建时间', null=True, blank=True)
+    deliver = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="发单人员", null=True,
+                                related_name="deliver")
+    deliver_at = models.DateTimeField(u'发单时间', null=True, blank=True)
+    receiver = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="签单人员", null=True,
+                                 related_name="receiver")
+    receiver_at = models.DateTimeField(u'签单时间', null=True, blank=True, )
+    status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
 
     def __str__(self):
         return "%s" % self.quantity
@@ -73,6 +88,7 @@ class Task(models.Model):
     name = models.CharField(u'名称', max_length=32, blank=True, null=True)
     sub_procedure = models.CharField(u'子工序', max_length=32, blank=True, null=True)
     procedure = models.ForeignKey(Procedure, verbose_name="工序", blank=True, null=True, on_delete=models.DO_NOTHING)
+    procedure_name = models.CharField(u'工序', max_length=32, null=True, blank=True)
     quantity = models.IntegerField(u'完成数量', null=True, blank=True)
     total = models.IntegerField(u'总数量', null=True, blank=True)
     start_at = models.DateTimeField(u'开始时间', null=True, blank=True)

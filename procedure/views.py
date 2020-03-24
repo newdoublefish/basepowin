@@ -88,6 +88,10 @@ class ReceiptViewSet(GenericViewSet,
     serializer_class = ReceiptSerializer
     filterset_fields = ('procedure',)
 
+    def perform_create(self, serializer):
+        serializer.validated_data['procedure_name'] = serializer.validated_data['procedure'].name
+        super().perform_create(serializer)
+
 
 class TaskViewSet(GenericViewSet,
                   mixins.ListModelMixin,
