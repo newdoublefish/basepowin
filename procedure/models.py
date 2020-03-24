@@ -1,5 +1,6 @@
 from django.db import models
 from user.models import Department, UserProfile
+from django.utils import timezone
 
 
 # Create your models here.
@@ -18,7 +19,7 @@ class Mop(models.Model):
     part_no = models.IntegerField(u'图号ID', null=True, blank=True)
     quantity = models.IntegerField(u'数量', null=True, blank=True)
     status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
-    created_at = models.DateTimeField(u'创建时间', null=True, blank=True)
+    created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
     updated_at = models.DateTimeField(u'更新时间', null=True, blank=True)
 
     def __str__(self):
@@ -43,7 +44,7 @@ class Procedure(models.Model):
     dept = models.ForeignKey(Department, verbose_name="部门", blank=True, null=True, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(u'数量', null=True, blank=True)
     status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
-    created_at = models.DateTimeField(u'创建时间', null=True, blank=True)
+    created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
     updated_at = models.DateTimeField(u'更新时间', null=True, blank=True)
 
     def __str__(self):
@@ -70,10 +71,11 @@ class Receipt(models.Model):
     quantity = models.IntegerField(u'交接数量', null=True, blank=True)
     deliver = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="发单人员", null=True,
                                 related_name="deliver")
-    deliver_at = models.DateTimeField(u'发单时间', null=True, blank=True)
+    delivered_at = models.DateTimeField(u'发单时间', null=True, blank=True)
     receiver = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="签单人员", null=True,
                                  related_name="receiver")
-    receiver_at = models.DateTimeField(u'签单时间', null=True, blank=True, )
+    received_at = models.DateTimeField(u'签单时间', null=True, blank=True, )
+    create_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
     status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
 
     def __str__(self):
@@ -90,10 +92,11 @@ class Task(models.Model):
     procedure = models.ForeignKey(Procedure, verbose_name="工序", blank=True, null=True, on_delete=models.DO_NOTHING)
     procedure_name = models.CharField(u'工序', max_length=32, null=True, blank=True)
     quantity = models.IntegerField(u'完成数量', null=True, blank=True)
-    total = models.IntegerField(u'总数量', null=True, blank=True)
-    start_at = models.DateTimeField(u'开始时间', null=True, blank=True)
-    stop_at = models.DateTimeField(u'停止时间', null=True, blank=True)
-    user = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="检验人员", null=True)
+    weight = models.FloatField(u'权重', null=True, blank=True)
+    created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
+    started_at = models.DateTimeField(u'开始时间', null=True, blank=True)
+    stopped_at = models.DateTimeField(u'停止时间', null=True, blank=True)
+    user = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="操作人员", null=True)
 
     def __str__(self):
         return "%s" % self.name

@@ -66,6 +66,10 @@ class MopViewSet(GenericViewSet,
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    @action(detail=True, methods=['get'])
+    def reset(self, request, pk=None):
+        pass
+
 
 class ProcedureViewSet(GenericViewSet,
                        mixins.ListModelMixin,
@@ -77,6 +81,18 @@ class ProcedureViewSet(GenericViewSet,
     serializer_class = ProcedureSerializer
     filterset_fields = ('mop',)
 
+    @action(detail=True, methods=['get'])
+    def start(self, request, pk=None):
+        pass
+
+    @action(detail=True, methods=['get'])
+    def finish(self, request, pk=None):
+        pass
+
+    @action(detail=True, methods=['get'])
+    def reset(self, request, pk=None):
+        pass
+
 
 class ReceiptViewSet(GenericViewSet,
                      mixins.ListModelMixin,
@@ -86,11 +102,20 @@ class ReceiptViewSet(GenericViewSet,
                      mixins.RetrieveModelMixin):
     queryset = Receipt.objects.all()
     serializer_class = ReceiptSerializer
-    filterset_fields = ('procedure',)
+    filterset_fields = ('deliver_procedure', 'receiver_procedure')
 
     def perform_create(self, serializer):
-        serializer.validated_data['procedure_name'] = serializer.validated_data['procedure'].name
+        serializer.validated_data['deliver_procedure_name'] = serializer.validated_data['deliver_procedure'].name
+        serializer.validated_data['receiver_procedure_name'] = serializer.validated_data['receiver_procedure'].name
         super().perform_create(serializer)
+
+    @action(detail=True, methods=['get'])
+    def deliver(self, request, pk=None):
+        pass
+
+    @action(detail=True, methods=['get'])
+    def receive(self, request, pk=None):
+        pass
 
 
 class TaskViewSet(GenericViewSet,
@@ -102,3 +127,11 @@ class TaskViewSet(GenericViewSet,
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     filterset_fields = ('procedure',)
+
+    @action(detail=True, methods=['get'])
+    def start(self, request, pk=None):
+        pass
+
+    @action(detail=True, methods=['get'])
+    def finish(self, request, pk=None):
+        pass
