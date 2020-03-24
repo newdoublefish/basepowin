@@ -12,6 +12,31 @@ from .models import Mop, Procedure, Receipt, Task
 from django.db import transaction
 
 
+# 耗时操作，可以考虑放到异步中执行
+def create_procedures(mop_instance=None):
+    # create first procedure
+    try:
+        procedure1 = Procedure(name='裁线', mop=mop_instance, part_no_name=mop_instance.part_no_name,
+                               mop_name=mop_instance.manufacture_order_name,
+                               quantity=mop_instance.quantity,
+                               parent=None)
+        procedure1.save()
+
+        procedure2 = Procedure(name='打端子', mop=mop_instance, part_no_name=mop_instance.part_no_name,
+                               mop_name=mop_instance.manufacture_order_name,
+                               quantity=mop_instance.quantity,
+                               parent=procedure1)
+        procedure2.save()
+
+        procedure3 = Procedure(name='组装', mop=mop_instance, part_no_name=mop_instance.part_no_name,
+                               mop_name=mop_instance.manufacture_order_name,
+                               quantity=mop_instance.quantity,
+                               parent=procedure2)
+        procedure3.save()
+    except Exception as e:
+        raise e
+
+
 class MopViewSet(GenericViewSet,
                  mixins.ListModelMixin,
                  mixins.CreateModelMixin,
@@ -25,11 +50,14 @@ class MopViewSet(GenericViewSet,
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # TODO:判断有没有重名的
+        # TODO:判断有没有重名的，已经完成的制订单不会再生成了
         with transaction.atomic():
             save_id = transaction.savepoint()
             try:
                 instance = serializer.save()
+                # TODO：创建流程
+                create_procedures(instance)
+
                 print(instance.id)
             except Exception as e:
                 transaction.savepoint_rollback(save_id)

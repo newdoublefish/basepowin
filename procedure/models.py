@@ -21,7 +21,7 @@ class Mop(models.Model):
     created_at = models.DateTimeField(u'创建时间', null=True, blank=True)
     updated_at = models.DateTimeField(u'更新时间', null=True, blank=True)
 
-    def ___str__(self):
+    def __str__(self):
         return "%s" % self.manufacture_order_name
 
     class Meta:
@@ -37,6 +37,7 @@ class Procedure(models.Model):
     )
     name = models.CharField(u'工序', max_length=32, null=True, blank=True)
     mop = models.ForeignKey(Mop, verbose_name="制订单流程", on_delete=models.DO_NOTHING, null=True)
+    mop_name = models.CharField(u'制订单流程', max_length=32, null=True, blank=True)
     part_no_name = models.CharField(u'图号', max_length=32, null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, verbose_name='上一个工序', null=True, blank=True, )
     dept = models.ForeignKey(Department, verbose_name="部门", blank=True, null=True, on_delete=models.DO_NOTHING)
@@ -45,7 +46,7 @@ class Procedure(models.Model):
     created_at = models.DateTimeField(u'创建时间', null=True, blank=True)
     updated_at = models.DateTimeField(u'更新时间', null=True, blank=True)
 
-    def ___str__(self):
+    def __str__(self):
         return "%s" % self.name
 
     class Meta:
@@ -60,7 +61,7 @@ class Receipt(models.Model):
     total = models.IntegerField(u'数量', null=True, blank=True)
     created_at = models.DateTimeField(u'创建时间', null=True, blank=True)
 
-    def ___str__(self):
+    def __str__(self):
         return "%s" % self.quantity
 
     class Meta:
@@ -78,7 +79,7 @@ class Task(models.Model):
     stop_at = models.DateTimeField(u'停止时间', null=True, blank=True)
     user = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="检验人员", null=True)
 
-    def ___str__(self):
+    def __str__(self):
         return "%s" % self.name
 
     class Meta:
