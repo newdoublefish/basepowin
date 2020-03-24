@@ -20,14 +20,20 @@ from django.conf.urls import url
 from rest_framework.authtoken import views
 from rest_framework.schemas import get_schema_view
 from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
+from basicproject import settings
+from django.conf.urls.static import static
+from rest_framework.documentation import include_docs_urls
 import xadmin
 
 schema_view = get_schema_view(title='Users API', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('xadmin/', xadmin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls')),
+    path("api-docs/", include_docs_urls("API文档")),
     url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^swagger/', schema_view, name="swagger"),
-    path('xadmin/', xadmin.site.urls),
-]
+    url(r'^api/', include('procedure.urls')),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
