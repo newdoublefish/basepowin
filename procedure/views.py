@@ -11,7 +11,7 @@ from .serializers import MopSerializer, ProcedureSerializer, ReceiptSerializer, 
 from .models import Mop, Procedure, Receipt, Task
 from django.db import transaction
 from django.utils import timezone
-from .common import ReceiptStatus
+from . import common
 import json
 
 
@@ -142,12 +142,12 @@ class ReceiptViewSet(GenericViewSet,
     def deliver(self, request, pk=None):
         try:
             receipt = self.get_object()
-            if receipt.status != ReceiptStatus.UN_KNOW:
+            if receipt.status != common.RECEIPT_STATUS_UN_KNOW:
                 raise Exception("该接收单处于%s状态" % receipt.get_status_display())
 
             receipt.delivered_at = timezone.now()
             receipt.deliver = request.user
-            receipt.status = ReceiptStatus.DELIVERED
+            receipt.status = common.RECEIPT_STATUS_DELIVERED
             receipt.save()
         except Exception as e:
             return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -157,11 +157,11 @@ class ReceiptViewSet(GenericViewSet,
     def receive(self, request, pk=None):
         try:
             receipt = self.get_object()
-            if receipt.status != ReceiptStatus.DELIVERED:
+            if receipt.status != common.RECEIPT_STATUS_DELIVERED:
                 raise Exception("该接收单处于%s状态" % receipt.get_status_display())
             receipt.received_at = timezone.now()
             receipt.receiver = request.user
-            receipt.status = ReceiptStatus.RECEIVED
+            receipt.status = common.RECEIPT_STATUS_RECEIVED
             receipt.save()
         except Exception as e:
             return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)

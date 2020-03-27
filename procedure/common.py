@@ -1,7 +1,6 @@
 from enum import Enum
 
 
-class ReceiptStatus(Enum):
-    UN_KNOW = 0
-    DELIVERED = 1
-    RECEIVED = 2
+RECEIPT_STATUS_UN_KNOW = 0
+RECEIPT_STATUS_DELIVERED = 1
+RECEIPT_STATUS_RECEIVED = 2

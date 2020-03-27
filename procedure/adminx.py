@@ -18,6 +18,7 @@ class ProcedureAdmin(object):
 
 class ReceiptAdmin(object):
     model_icon = "fa fa-paperclip"
+    list_filter = ('status', )
     list_display = (
         'deliver_type', 'deliver_procedure', 'receiver_procedure', 'quantity', 'deliver', 'receiver', 'status')
 

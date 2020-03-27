@@ -1,7 +1,7 @@
 from django.db import models
 from user.models import Department, UserProfile
 from django.utils import timezone
-from .common import ReceiptStatus
+from . import common
 
 
 # Create your models here.
@@ -60,9 +60,9 @@ class Procedure(models.Model):
 
 class Receipt(models.Model):
     STATUS_CHOICES = (
-        (ReceiptStatus.UN_KNOW, '未开始'),
-        (ReceiptStatus.DELIVERED, '已发送'),
-        (ReceiptStatus.RECEIVED, '已接收'),
+        (common.RECEIPT_STATUS_UN_KNOW, '未开始'),
+        (common.RECEIPT_STATUS_DELIVERED, '已发送'),
+        (common.RECEIPT_STATUS_RECEIVED, '已接收'),
     )
 
     TYPES_DELIVER = (
