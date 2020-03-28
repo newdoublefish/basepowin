@@ -99,16 +99,24 @@ class Receipt(models.Model):
 
 
 class Task(models.Model):
+    STATUS_CHOICES = (
+        (common.TASK_STATUS_UN_START, '未开始'),
+        (common.TASK_STATUS_UNDER_GOING, '进行中'),
+        (common.TASK_STATUS_FINISHED, '已完成'),
+    )
+
     name = models.CharField(u'名称', max_length=32, blank=True, null=True)
     sub_procedure = models.CharField(u'子工序', max_length=32, blank=True, null=True)
     procedure = models.ForeignKey(Procedure, verbose_name="工序", blank=True, null=True, on_delete=models.DO_NOTHING)
     procedure_name = models.CharField(u'工序', max_length=32, null=True, blank=True)
-    quantity = models.IntegerField(u'完成数量', default=0)
+    plan_quantity = models.IntegerField(u'计划完成数量', default=0)
+    quantity = models.IntegerField(u'实际完成数量', default=0)
     weight = models.FloatField(u'权重', default=1)
-    created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
+    created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.datetime.now())
     started_at = models.DateTimeField(u'开始时间', null=True, blank=True)
     stopped_at = models.DateTimeField(u'停止时间', null=True, blank=True)
     user = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="操作人员", null=True)
+    status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
 
     def __str__(self):
         return "%s" % self.name

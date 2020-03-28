@@ -43,8 +43,8 @@ class ReceiptAdmin(object):
 class TaskAdmin(object):
     model_icon = "fa fa-tasks"
     list_display = (
-        'name', 'sub_procedure', 'procedure', 'quantity', 'weight', 'user', 'started_at',
-        'stopped_at')
+        'name', 'sub_procedure', 'procedure', 'plan_quantity', 'quantity', 'weight', 'user', 'started_at',
+        'stopped_at', 'status')
 
 
 xadmin.site.register(Mop, MopAdmin)
