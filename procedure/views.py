@@ -69,10 +69,6 @@ class MopViewSet(GenericViewSet,
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=True, methods=['get'])
-    def reset(self, request, pk=None):
-        pass
-
 
 class ProcedureViewSet(GenericViewSet,
                        mixins.ListModelMixin,
@@ -86,11 +82,27 @@ class ProcedureViewSet(GenericViewSet,
 
     @action(detail=True, methods=['get'])
     def start(self, request, pk=None):
-        pass
+        try:
+            instance = self.get_object()
+            if instance.status is not common.PROCEDURE_STATUS_UN_START:
+                raise Exception("该工序处于%s状态" % instance.get_status_display())
+            instance.status = common.PROCEDURE_STATUS_UNDER_GOING
+            instance.save()
+        except Exception as e:
+            return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def finish(self, request, pk=None):
-        pass
+        try:
+            instance = self.get_object()
+            if instance.status is not common.PROCEDURE_STATUS_UNDER_GOING:
+                raise Exception("该工序处于%s状态" % instance.get_status_display())
+            instance.status = common.PROCEDURE_STATUS_FINISHED
+            instance.save()
+        except Exception as e:
+            return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def reset(self, request, pk=None):

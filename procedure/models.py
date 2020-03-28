@@ -33,9 +33,9 @@ class Mop(models.Model):
 
 class Procedure(models.Model):
     STATUS_CHOICES = (
-        (0, '未开始'),
-        (1, '进行中'),
-        (2, '已完成'),
+        (common.PROCEDURE_STATUS_UN_START, '未开始'),
+        (common.PROCEDURE_STATUS_UNDER_GOING, '进行中'),
+        (common.PROCEDURE_STATUS_FINISHED, '已完成'),
     )
     name = models.CharField(u'工序', max_length=32, null=True, blank=True)
     mop = models.ForeignKey(Mop, verbose_name="制订单流程", on_delete=models.DO_NOTHING, null=True)
@@ -43,10 +43,10 @@ class Procedure(models.Model):
     part_no_name = models.CharField(u'图号', max_length=32, null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, verbose_name='上一个工序', null=True, blank=True, )
     dept = models.ForeignKey(Department, verbose_name="部门", blank=True, null=True, on_delete=models.DO_NOTHING)
-    quantity = models.IntegerField(u'完成数量', default=0,)
-    received_quantity = models.IntegerField(u'接收数量', default=0,)
-    delivered_quantity = models.IntegerField(u'发出数量', default=0,)
-    remake_quantity = models.IntegerField(u'返工数量', default=0,)
+    quantity = models.IntegerField(u'完成数量', default=0, )
+    received_quantity = models.IntegerField(u'接收数量', default=0, )
+    delivered_quantity = models.IntegerField(u'发出数量', default=0, )
+    remake_quantity = models.IntegerField(u'返工数量', default=0, )
     status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
     created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
     updated_at = models.DateTimeField(u'更新时间', null=True, blank=True)
