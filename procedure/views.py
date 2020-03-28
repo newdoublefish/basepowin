@@ -168,22 +168,39 @@ class ReceiptViewSet(GenericViewSet,
 
     @action(detail=True, methods=['get'])
     def receive(self, request, pk=None):
-        try:
-            receipt = self.get_object()
-            if receipt.status != common.RECEIPT_STATUS_DELIVERED:
-                raise Exception("该接收单处于%s状态" % receipt.get_status_display())
-            receipt.received_at = timezone.now()
-            receipt.receiver = request.user
-            receipt.status = common.RECEIPT_STATUS_RECEIVED
-            receipt.deliver_procedure.delivered_quantity += receipt.quantity
-            receipt.deliver_procedure.save()
-            receipt.receiver_procedure.received_quantity += receipt.quantity
-            receipt.receiver_procedure.save()
-            receipt.receiver = request.user
-            receipt.save()
-        except Exception as e:
-            return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                receipt = self.get_object()
+                if receipt.status != common.RECEIPT_STATUS_DELIVERED:
+                    raise Exception("该接收单处于%s状态" % receipt.get_status_display())
+                receipt.received_at = timezone.now()
+                receipt.receiver = request.user
+                receipt.status = common.RECEIPT_STATUS_RECEIVED
+                receipt.deliver_procedure.delivered_quantity += receipt.quantity
+                receipt.deliver_procedure.save()
+                receipt.receiver_procedure.received_quantity += receipt.quantity
+                receipt.receiver_procedure.save()
+                receipt.receiver = request.user
+                receipt.save()
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
         return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
+
+
+# 调价判断应该反倒serializer来做
+def fill_task(task=None):
+    task.procedure_name = task.procedure.name
+    task.status = common.TASK_STATUS_UN_START
+    if task.procedure.status is not common.PROCEDURE_STATUS_UNDER_GOING:
+        raise Exception("该工序处于%s状态" % task.procedure.get_status_display())
+    if task.user is None:
+        raise Exception("请分配操作人员")
+    if task.quantity <= 0:
+        raise Exception("数量必须大于0")
+    task.save()
 
 
 class TaskViewSet(GenericViewSet,
@@ -196,10 +213,46 @@ class TaskViewSet(GenericViewSet,
     serializer_class = TaskSerializer
     filterset_fields = ('procedure',)
 
+    def create(self, request, *args, **kwargs):
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                serializer = self.get_serializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                instance = serializer.save()
+                fill_task(instance)
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     @action(detail=True, methods=['get'])
     def start(self, request, pk=None):
-        pass
+        try:
+            instance = self.get_object()
+            instance.started_at = timezone.datetime.now()
+            instance.status = common.TASK_STATUS_UNDER_GOING
+            instance.save()
+        except Exception as e:
+            return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def finish(self, request, pk=None):
-        pass
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                instance = self.get_object()
+                instance.procedure.quantity += instance.quantity
+                instance.procedure.save()
+
+                instance.stopped_at = timezone.datetime.now()
+                instance.status = common.TASK_STATUS_FINISHED
+                instance.save()
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+        return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
