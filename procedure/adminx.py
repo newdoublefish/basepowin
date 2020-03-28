@@ -10,7 +10,9 @@ class MopAdmin(object):
 
 
 class ProcedureAdmin(object):
-    list_display = ('name', 'mop', 'part_no_name', 'dept', 'quantity', 'status')
+    list_display = (
+        'name', 'mop', 'part_no_name', 'dept', 'quantity', 'received_quantity', 'delivered_quantity', 'remake_quantity',
+        'status')
     model_icon = "fa fa-hand-o-right"
     list_filter = ('name', 'mop', 'part_no_name', 'dept', 'status')
     search_fields = ('name', 'part_no_name', 'mop_name')
@@ -18,7 +20,7 @@ class ProcedureAdmin(object):
 
 class ReceiptAdmin(object):
     model_icon = "fa fa-paperclip"
-    list_filter = ('status', )
+    list_filter = ('status',)
     list_display = (
         'deliver_type', 'deliver_procedure', 'receiver_procedure', 'quantity', 'deliver', 'receiver', 'status')
 

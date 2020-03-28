@@ -43,9 +43,10 @@ class Procedure(models.Model):
     part_no_name = models.CharField(u'图号', max_length=32, null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, verbose_name='上一个工序', null=True, blank=True, )
     dept = models.ForeignKey(Department, verbose_name="部门", blank=True, null=True, on_delete=models.DO_NOTHING)
-    quantity = models.IntegerField(u'完成数量', null=True, blank=True)
-    received_quantity = models.IntegerField(u'接收数量', null=True, blank=True)
-    delivered_quantity = models.IntegerField(u'发出数量', null=True, blank=True)
+    quantity = models.IntegerField(u'完成数量', default=0,)
+    received_quantity = models.IntegerField(u'接收数量', default=0,)
+    delivered_quantity = models.IntegerField(u'发出数量', default=0,)
+    remake_quantity = models.IntegerField(u'返工数量', default=0,)
     status = models.IntegerField(u"状态", choices=STATUS_CHOICES, default=0)
     created_at = models.DateTimeField(u'创建时间', null=True, blank=True, default=timezone.now)
     updated_at = models.DateTimeField(u'更新时间', null=True, blank=True)
@@ -66,9 +67,9 @@ class Receipt(models.Model):
     )
 
     TYPES_DELIVER = (
-        (0, '未定义'),
-        (1, '正常'),
-        (2, '反工'),
+        (common.RECEIPT_TYPE_UN_DEFINE, '未定义'),
+        (common.RECEIPT_TYPE_NORMAL, '正常'),
+        (common.RECEIPT_TYPE_REMAKE, '反工'),
     )
 
     deliver_type = models.IntegerField(u"类型", choices=TYPES_DELIVER, default=0)
