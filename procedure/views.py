@@ -186,6 +186,18 @@ class ReceiptViewSet(GenericViewSet,
         return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
 
 
+# 调价判断应该反倒serializer来做
+def fill_task(task=None):
+    task.procedure_name = task.procedure.name
+    if task.procedure.status is not common.PROCEDURE_STATUS_UNDER_GOING:
+        raise Exception("该工序处于%s状态" % task.procedure.get_status_display())
+    if task.user is None:
+        raise Exception("请分配操作人员")
+    if task.quantity <= 0:
+        raise Exception("数量必须大于0")
+    task.save()
+
+
 class TaskViewSet(GenericViewSet,
                   mixins.ListModelMixin,
                   mixins.CreateModelMixin,
@@ -195,6 +207,22 @@ class TaskViewSet(GenericViewSet,
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     filterset_fields = ('procedure',)
+
+    def create(self, request, *args, **kwargs):
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                serializer = self.get_serializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                instance = serializer.save()
+                fill_task(instance)
+                print(instance.id)
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['get'])
     def start(self, request, pk=None):
