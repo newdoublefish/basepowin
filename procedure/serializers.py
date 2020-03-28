@@ -17,7 +17,7 @@ class ProcedureSerializer(serializers.ModelSerializer):
 class ReceiptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
-        fields = "__all__"
+        fields = ('deliver_procedure', 'receiver_procedure', 'quantity')
 
 
 class TaskSerializer(serializers.ModelSerializer):
