@@ -32,6 +32,14 @@ class RoleViewSet(GenericViewSet,
     filterset_fields = ('name',)
 
 
+def fill_user_permissions(user=None):
+    role_list = user.role.all()
+    user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
+    user.user_permissions.clear()
+    user.user_permissions.add(*user_permissions_set)
+    user.save()
+
+
 class UserProfileViewSet(GenericViewSet,
                          mixins.CreateModelMixin,
                          mixins.ListModelMixin,
@@ -41,5 +49,21 @@ class UserProfileViewSet(GenericViewSet,
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     filterset_fields = ('role', 'dept',)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                instance = serializer.save()
+                # 分配基于角色的权限
+                fill_user_permissions(instance)
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 

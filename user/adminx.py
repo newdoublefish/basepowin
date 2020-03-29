@@ -23,7 +23,6 @@ class UserProfilesAdmin(object):
         obj = self.new_obj
         super(UserProfilesAdmin, self).save_related()
         role_list = obj.role.all()
-        print(role_list)
         user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
         obj.user_permissions.clear()
         obj.user_permissions.add(*user_permissions_set)
