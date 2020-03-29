@@ -4,6 +4,8 @@ from django.contrib.auth.forms import (UserCreationForm, UserChangeForm,
                                        AdminPasswordChangeForm, PasswordChangeForm)
 from xadmin.layout import Fieldset, Main, Side, Row, FormHelper
 from xadmin import views
+from django import forms
+from django.db import transaction
 
 
 class UserProfilesAdmin(object):
@@ -17,6 +19,25 @@ class UserProfilesAdmin(object):
     relfield_style = 'fk-ajax'
     exclude = ('user_permissions', 'groups')
 
+    def save_related(self):
+        obj = self.new_obj
+        super(UserProfilesAdmin, self).save_related()
+        role_list = obj.role.all()
+        print(role_list)
+        user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
+        obj.user_permissions.clear()
+        obj.user_permissions.add(*user_permissions_set)
+        obj.save()
+
+    def save_models(self):
+        try:
+            obj = self.new_obj
+            if self.new_obj.id is None:
+                obj.save()
+            else:
+                super(UserProfilesAdmin, self).save_models()
+        except Exception as e:
+            raise forms.ValidationError(str(e))
     # def get_field_attrs(self, db_field, **kwargs):
     #     attrs = super(UserProfilesAdmin, self).get_field_attrs(db_field, **kwargs)
     #     if db_field.name == 'user_permissions':

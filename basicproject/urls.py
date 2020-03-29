@@ -35,5 +35,5 @@ urlpatterns = [
     url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^swagger/', schema_view, name="swagger"),
     url(r'^api/', include('procedure.urls')),
-
+    url(r'^api/', include('user.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
