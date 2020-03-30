@@ -20,6 +20,12 @@ class DepartmentViewSet(GenericViewSet,
     serializer_class = DepartmentSerializer
     filterset_fields = ('name', 'parent')
 
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return super().get_queryset()
+        if self.request.user.dept is not None:
+            return Department.objects.all(parent=self.request.user.dept)
+
 
 class RoleViewSet(GenericViewSet,
                   mixins.CreateModelMixin,
