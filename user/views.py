@@ -66,4 +66,16 @@ class UserProfileViewSet(GenericViewSet,
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def perform_update(self, serializer):
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                instance = serializer.save()
+                fill_user_permissions(instance)
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                raise e
+            transaction.savepoint_commit(save_id)
+
+
 
