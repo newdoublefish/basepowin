@@ -55,14 +55,14 @@ class UserProfile(AbstractUser):
     def __str__(self):
         return "%s%s" % (self.last_name, self.first_name)
 
-    def save(self, *args, **kwargs):
-        super(UserProfile, self).save(*args, **kwargs)
-        if self.role is not None:
-            role_list = self.role.all()
-            user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
-            self.user_permissions.clear()
-            self.user_permissions.add(*user_permissions_set)
-            super(UserProfile, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     super(UserProfile, self).save(*args, **kwargs)
+    #     if self.role is not None:
+    #         role_list = self.role.all()
+    #         user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
+    #         self.user_permissions.clear()
+    #         self.user_permissions.add(*user_permissions_set)
+    #         super(UserProfile, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = u'用户管理'

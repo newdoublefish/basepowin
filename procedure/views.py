@@ -12,6 +12,10 @@ from .models import Mop, Procedure, Receipt, Task
 from django.db import transaction
 from django.utils import timezone
 from . import common
+from xadmin.views.base import BaseAdminView, ModelAdminView, filter_hook, csrf_protect_m
+import collections
+from xadmin.views import Dashboard
+
 import json
 
 
@@ -256,3 +260,16 @@ class TaskViewSet(GenericViewSet,
                 return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             transaction.savepoint_commit(save_id)
         return Response({"status": "success", "data": {}}, status=status.HTTP_200_OK)
+
+
+# Create your views here.
+class ProcedureDetail(Dashboard, BaseAdminView):
+    template_name = 'procedure/procedure.html'
+
+    @filter_hook
+    def get_context(self):
+        context = Dashboard.get_context(self)
+        return context
+
+    def get(self, request, *args, **kwargs):
+        return self.template_response(self.template_name, self.get_context())
