@@ -1,5 +1,5 @@
 FROM centos
-MAINTAINER ray <zengyanren@gdmcmc.cn>
+MAINTAINER ray <zengyanren@foxmail.com>
 
 RUN mkdir /home/project
 ENV DOCKER_PROJECT /home/project
