@@ -269,8 +269,23 @@ class ProcedureDetail(Dashboard, BaseAdminView):
     @filter_hook
     def get_context(self):
         context = Dashboard.get_context(self)
+        # render_data = {
+        #     "mop": "",
+        #     "procedures": []
+        # }
         mop = Mop.objects.get(id=int(self.request.GET.get('id')))
-        context['title'] = "制订单号:"+mop.manufacture_order_name
+        # render_data['mop'] = MopSerializer(mop).data
+        context['title'] = "制订单号:" + mop.manufacture_order_name
+        procedures = Procedure.objects.filter(mop=mop).all().order_by("created_at")
+        # if procedures.exists() is True:
+        #     for procedure in procedures:
+        #         render_data['procedures'].append(ProcedureSerializer(procedure).data)
+
+        # render_data['mop'] = mop
+        # render_data['procedures'] = procedures
+        # context['data'] = render_data
+        context['mop'] = mop
+        context['procedures'] = procedures
         return context
 
     def get(self, request, *args, **kwargs):
