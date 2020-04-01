@@ -269,6 +269,8 @@ class ProcedureDetail(Dashboard, BaseAdminView):
     @filter_hook
     def get_context(self):
         context = Dashboard.get_context(self)
+        mop = Mop.objects.get(id=int(self.request.GET.get('id')))
+        context['title'] = "制订单号:"+mop.manufacture_order_name
         return context
 
     def get(self, request, *args, **kwargs):
