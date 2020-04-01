@@ -1,10 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends base_template %}
+{% load i18n %}
+
+{% load xadmin_tags %}
+
+{% block bodyclass %}dashboard{% endblock %}
+{% block breadcrumbs %}
+{% endblock %}
+{% load static %}
+{% block nav_title %}
+    {{ title }}
+
+{% endblock %}
+
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Bootstrap 实例</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
-<body>
-HELLO WORLD
-</body>
-</html>
+
+
+{% block content %}
+    <div id="steps1"></div>
+
+    <script type="text/javascript" src={% static 'procedure/steps/2.0/steps.js' %}></script>
+    <link rel="stylesheet" href={% static 'procedure/steps/2.0/steps.css' %}>
+    <script type="text/javascript">
+        console.log("{{mop|safe}}")
+
+        data = []
+        {% for procedure  in procedures %}
+            console.log("{{ procedure|safe }}")
+            row = {}
+            row['title'] = "{{ procedure.name }}"
+            row['description'] = "{{ procedure.get_status_display}}"
+            row['status'] = ({{ procedure.status }} > 0) ? (1) : (0)
+            row['customHtml'] = '<div style="order: 3;"><ul class="list-group">\n' +
+                '<li class="list-group-item">接受:{{ procedure.received_quantity }}</li>\n' +
+                '<li class="list-group-item">完成:{{ procedure.quantity }}</li>\n' +
+                '<li class="list-group-item">发送:{{ procedure.delivered_quantity }}</li>\n' +
+                '<li class="list-group-item">返工:{{ procedure.remake_quantity }}</li>\n' +
+                '<li class="list-group-item">时间:{{ procedure.created_at }}</li>\n' +
+                '</ul>\n' +
+                '</div>'
+            data.push(row)
+        {% endfor %}
+
+        let x = {}
+        x['a'] = "b"
+        console.log(x)
+
+        var steps1 = steps({
+            el: "#steps1",
+            center: true,
+            data: data
+        });
+    </script>
+{% endblock %}
