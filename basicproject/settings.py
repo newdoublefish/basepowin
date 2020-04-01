@@ -14,6 +14,7 @@ import os
 import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from .deploy.local import *
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 
@@ -122,20 +123,20 @@ WSGI_APPLICATION = 'basicproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    },
-    # 'db1': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': 'manufacture',
-    #     'USER': 'mcmc',
-    #     'PASSWORD': 'mcmc1918',
-    #     'HOST': '47.107.182.100',
-    #     'PORT': '8432',
-    # }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     },
+#     # 'db1': {
+#     #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#     #     'NAME': 'manufacture',
+#     #     'USER': 'mcmc',
+#     #     'PASSWORD': 'mcmc1918',
+#     #     'HOST': '47.107.182.100',
+#     #     'PORT': '8432',
+#     # }
+# }
 
 DATABASE_ROUTERS = ['basicproject.database_router.DatabaseAppsRouter']
 DATABASE_APPS_MAPPING = {
