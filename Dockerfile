@@ -44,7 +44,7 @@ WORKDIR $DOCKER_PROJECT
 
 COPY ./requirements.txt ./
 RUN pip install --default-timeout=100 --trusted-host=mirrors.aliyun.com --upgrade pip &&\
-    pip install -r requirements.txt --default-timeout=100 --trusted-host=mirrors.aliyun.com &&\
+    pip install -r requirements.txt --default-timeout=100 --trusted-host=mirrors.aliyun.com -i https://mirrors.aliyun.com/pypi/simple/&&\
     rm requirements.txt
 
 # RUN pip install -r requirement.txt
