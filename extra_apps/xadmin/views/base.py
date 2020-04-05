@@ -456,12 +456,22 @@ class CommAdminView(BaseAdminView):
         for menu in nav_menu:
             check_selected(menu, self.request.path)
 
+        is_redirect = False
+        redirect_url = '/'
+        if self.request.get_full_path() == '/xadmin/':
+            is_redirect = True
+            redirect_url = '/xadmin/dashboard/'
+        else:
+            pass
+
         context.update({
             'menu_template': self.menu_template,
             'nav_menu': nav_menu,
             'site_title': self.site_title,
             'site_footer': self.site_footer,
-            'breadcrumbs': self.get_breadcrumb()
+            'breadcrumbs': self.get_breadcrumb(),
+            'is_redirect': is_redirect,  # 另加
+            'redirect_url': redirect_url
         })
 
         return context
