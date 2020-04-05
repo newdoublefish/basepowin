@@ -7,6 +7,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth.hashers import make_password,check_password
 from django.utils import timezone
 
 
@@ -83,6 +84,24 @@ class UserProfileViewSet(GenericViewSet,
                 transaction.savepoint_rollback(save_id)
                 raise e
             transaction.savepoint_commit(save_id)
+
+    @action(detail=True, methods=['post'])
+    def reset_password(self, request, pk=None):
+        try:
+            origin = request.data.get('old')
+            new_password = request.data.get('new')
+            instance = self.get_object()
+            if check_password(origin, instance.password):
+                instance.password = make_password(new_password)
+                instance.save()
+            else:
+                raise Exception("初始密码错误")
+            if origin is None or new_password is None:
+                raise Exception("缺少参数old或者new")
+            return Response({"status": "success"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomAuthToken(ObtainAuthToken):
