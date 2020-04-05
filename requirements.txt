@@ -28,7 +28,7 @@ openpyxl==2.5.8
 psycopg2-binary==2.7.5
 pytz==2018.5
 PyYAML==3.13
-requests==2.19.1
+requests==2.20.0
 simplejson==3.16.0
 six==1.11.0
 standardjson==0.3.1
