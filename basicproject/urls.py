@@ -32,8 +32,9 @@ urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     url(r'^api-auth/', include('rest_framework.urls')),
     path("api-docs/", include_docs_urls("API文档")),
-    url(r'^api-token-auth/', views.obtain_auth_token),
+    # url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^swagger/', schema_view, name="swagger"),
     url(r'^api/', include('procedure.urls')),
     url(r'^api/', include('user.urls')),
+    url(r'^api/', include('version.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

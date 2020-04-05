@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*', ]
 # Application definition
 
 INSTALLED_APPS = [
+    'version',
     'procedure',
     'user',
     'dashboard',
