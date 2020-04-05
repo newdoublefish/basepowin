@@ -1,11 +1,12 @@
-from django.shortcuts import render
 from .serializers import DepartmentSerializer, RoleSerializer, UserProfileSerializer
 from .models import Department, Role, UserProfile
 from rest_framework.viewsets import GenericViewSet, mixins
 from rest_framework.decorators import action
+from django.db import transaction
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
-from django.db import transaction
 from django.utils import timezone
 
 
@@ -84,4 +85,26 @@ class UserProfileViewSet(GenericViewSet,
             transaction.savepoint_commit(save_id)
 
 
+class CustomAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        try:
+            serializer = self.serializer_class(data=request.data,
+                                               context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            user = serializer.validated_data['user']
+            serializer = UserProfileSerializer(user)
+            if 'HTTP_X_FORWARDED_FOR' in request.META:
+                ip = request.META.get('HTTP_X_FORWARDED_FOR')
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            if user.is_active is True:
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({
+                    'token': token.key,
+                    'user': serializer.data,
+                })
+            else:
+                raise Exception("not active")
+        except Exception as e:
+            return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
