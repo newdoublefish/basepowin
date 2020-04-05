@@ -23,6 +23,10 @@ jobs:
     - uses: actions/checkout@v2
 
     # Runs a set of commands using the runners shell
-    - name: Run a multi-line script
+    - name: stop docker-compose
       run: |
-        docker-compose restart
+        docker-compose stop
+
+    - name: start docker-compose
+      run: |
+        docker-compose start
