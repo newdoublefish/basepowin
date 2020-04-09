@@ -7,4 +7,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(SQLITE_BASE_DIR, 'db.sqlite3'),
     },
+    'erp': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(SQLITE_BASE_DIR, 'dberp.sqlite3'),
+    },
 }

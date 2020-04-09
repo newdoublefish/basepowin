@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*', ]
 # Application definition
 
 INSTALLED_APPS = [
+    'erp',
     'version',
     'procedure',
     'user',
@@ -143,7 +144,7 @@ DATABASE_ROUTERS = ['basicproject.database_router.DatabaseAppsRouter']
 DATABASE_APPS_MAPPING = {
     # example:
     #'app_name':'database_name',
-    'product': 'db1',
+    'erp': 'erp',
 }
 
 # Password validation
