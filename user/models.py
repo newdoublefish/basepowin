@@ -38,8 +38,9 @@ class Role(models.Model):
 def fill_user_permissions(user=None):
     # user_permissions_set = {permission for permission in user.role.permissions}
     user.user_permissions.clear()
-    for permission in user.role.permissions.all():
-        user.user_permissions.add(permission)
+    if user.role is not None:
+        for permission in user.role.permissions.all():
+            user.user_permissions.add(permission)
     user.save()
 
 
