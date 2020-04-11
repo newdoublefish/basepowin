@@ -7,7 +7,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.hashers import make_password,check_password
+from django.contrib.auth.hashers import make_password, check_password
+from .models import fill_user_permissions
 from django.utils import timezone
 
 
@@ -40,14 +41,6 @@ class RoleViewSet(GenericViewSet,
     filterset_fields = ('name',)
 
 
-def fill_user_permissions(user=None):
-    role_list = user.role.all()
-    user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
-    user.user_permissions.clear()
-    user.user_permissions.add(*user_permissions_set)
-    user.save()
-
-
 class UserProfileViewSet(GenericViewSet,
                          mixins.CreateModelMixin,
                          mixins.ListModelMixin,
@@ -60,15 +53,22 @@ class UserProfileViewSet(GenericViewSet,
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            print(e)
+            raise e
+
         with transaction.atomic():
             save_id = transaction.savepoint()
             try:
+
                 instance = serializer.save()
                 # 分配基于角色的权限
                 fill_user_permissions(instance)
             except Exception as e:
                 transaction.savepoint_rollback(save_id)
+                print(str(e))
                 return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             transaction.savepoint_commit(save_id)
         headers = self.get_success_headers(serializer.data)
@@ -126,4 +126,3 @@ class CustomAuthToken(ObtainAuthToken):
                 raise Exception("not active")
         except Exception as e:
             return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-

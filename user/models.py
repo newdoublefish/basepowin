@@ -35,21 +35,26 @@ class Role(models.Model):
         verbose_name_plural = u'职位管理'
 
 
+def fill_user_permissions(user=None):
+    # user_permissions_set = {permission for permission in user.role.permissions}
+    user.user_permissions.clear()
+    for permission in user.role.permissions.all():
+        user.user_permissions.add(permission)
+    user.save()
+
+
 @receiver(post_save, sender=Role)
 def sync_auth(sender, instance=None, created=False, **kwargs):
     user_model = get_user_model()
     users = user_model.objects.all().filter(role=instance)
     for user in users:
-        role_list = user.role.all()
-        user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
-        user.user_permissions.clear()
-        user.user_permissions.add(*user_permissions_set)
-        user.save()
+        fill_user_permissions(user)
 
 
 class UserProfile(AbstractUser):
     mobile = models.CharField(u'手机', max_length=11, null=True)
-    role = models.ManyToManyField('Role', verbose_name='职位', blank=True)
+    # role = models.ManyToManyField('Role', verbose_name='职位', blank=True)
+    role = models.ForeignKey(Role, blank=True, null=True, on_delete=models.DO_NOTHING)
     dept = models.ForeignKey(Department, blank=True, null=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):

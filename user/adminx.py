@@ -1,5 +1,5 @@
 import xadmin
-from .models import Role, UserProfile, Department
+from .models import Role, UserProfile, Department, fill_user_permissions
 from django.contrib.auth.forms import (UserCreationForm, UserChangeForm,
                                        AdminPasswordChangeForm, PasswordChangeForm)
 from xadmin.layout import Fieldset, Main, Side, Row, FormHelper
@@ -19,22 +19,23 @@ class UserProfilesAdmin(object):
     relfield_style = 'fk-ajax'
     exclude = ('user_permissions', 'groups')
 
-    def save_related(self):
-        obj = self.new_obj
-        super(UserProfilesAdmin, self).save_related()
-        role_list = obj.role.all()
-        user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
-        obj.user_permissions.clear()
-        obj.user_permissions.add(*user_permissions_set)
-        obj.save()
+    # def save_related(self):
+    #     obj = self.new_obj
+    #     super(UserProfilesAdmin, self).save_related()
+    #     role_list = obj.role.all()
+    #     user_permissions_set = {permissions for role in role_list for permissions in role.permissions.all()}
+    #     obj.user_permissions.clear()
+    #     obj.user_permissions.add(*user_permissions_set)
+    #     obj.save()
 
     def save_models(self):
         try:
             obj = self.new_obj
             if self.new_obj.id is None:
                 obj.save()
-            else:
-                super(UserProfilesAdmin, self).save_models()
+            fill_user_permissions(obj)
+            # else:
+            #     super(UserProfilesAdmin, self).save_models()
         except Exception as e:
             raise forms.ValidationError(str(e))
     # def get_field_attrs(self, db_field, **kwargs):
