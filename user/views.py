@@ -62,7 +62,7 @@ class UserProfileViewSet(GenericViewSet,
         with transaction.atomic():
             save_id = transaction.savepoint()
             try:
-
+                serializer.validated_data['password'] = make_password(serializer.validated_data['password'])
                 instance = serializer.save()
                 # 分配基于角色的权限
                 fill_user_permissions(instance)
