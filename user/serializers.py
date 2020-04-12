@@ -22,8 +22,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = (
-            'id', 'name', 'mobile', 'username', 'first_name', 'last_name', 'is_active', 'role', 'dept', 'is_staff',
-            'user_permissions',
+            'id', 'name', 'mobile', 'username', 'first_name', 'last_name', 'is_active', 'dept', 'is_staff',
+            'user_permissions', 'is_superuser', 'role', 'password',
             'dept_name', 'role_name')
         read_only = ('user_permissions',)
 
@@ -32,11 +32,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_role_name(self, obj):
         if obj.role is not None:
-            role_list = obj.role.all()
-            role_name = ""
-            for role in role_list:
-                role_name = role_name + role.name + ";"
-            return role_name
+            # role_list = obj.role.all()
+            # role_name = ""
+            # for role in role_list:
+            #     role_name = role_name + role.name + ";"
+            return obj.role.name  # role_name
 
     def get_dept_name(self, obj):
         if obj.dept is not None:
