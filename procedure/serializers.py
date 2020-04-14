@@ -21,7 +21,21 @@ class ReceiptSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    status_text = serializers.SerializerMethodField()
+
     class Meta:
         model = Task
-        fields = "__all__"
+        fields = ('name', 'sub_procedure', 'procedure', 'procedure_name', 'plan_quantity', 'quantity',
+                  'weight', 'created_at', 'started_at', 'stopped_at', 'user', 'username', 'status', 'status_text')
+        readonly = ('created_at', 'started_at', 'stopped_at'),
+
+    def get_username(self, obj):
+        if obj.user is not None:
+            return obj.user.username
+        return ""
+
+    def get_status_text(self, obj):
+        return obj.get_status_display()
+
 
