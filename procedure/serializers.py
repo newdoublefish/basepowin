@@ -26,7 +26,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ('name', 'sub_procedure', 'procedure', 'procedure_name', 'plan_quantity', 'quantity',
+        fields = ('id', 'name', 'sub_procedure', 'procedure', 'procedure_name', 'plan_quantity', 'quantity',
                   'weight', 'created_at', 'started_at', 'stopped_at', 'user', 'username', 'status', 'status_text')
         readonly = ('created_at', 'started_at', 'stopped_at'),
 

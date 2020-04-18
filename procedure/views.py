@@ -215,7 +215,7 @@ class TaskViewSet(GenericViewSet,
                   mixins.RetrieveModelMixin):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    filterset_fields = ('procedure',)
+    filterset_fields = ('procedure','status')
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
