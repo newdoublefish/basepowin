@@ -1,5 +1,5 @@
 import xadmin
-from .models import Mop, Procedure, Receipt, Task
+from .models import Mop, Procedure, Receipt, Task, ReceiveHistory
 from xadmin.layout import Main, Side, Fieldset, Row, AppendedText
 from .views import ProcedureDetail
 
@@ -59,4 +59,5 @@ xadmin.site.register(Mop, MopAdmin)
 xadmin.site.register(Procedure, ProcedureAdmin)
 xadmin.site.register(Receipt, ReceiptAdmin)
 xadmin.site.register(Task, TaskAdmin)
+xadmin.site.register(ReceiveHistory)
 xadmin.site.register_view(r'procedure/detail/$', ProcedureDetail, name="detail")

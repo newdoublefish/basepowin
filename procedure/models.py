@@ -59,6 +59,21 @@ class Procedure(models.Model):
         verbose_name_plural = "工序"
 
 
+class ReceiveHistory(models.Model):
+    receiver_procedure = models.ForeignKey(Procedure, verbose_name="接收工序", blank=True, null=True,
+                                           on_delete=models.DO_NOTHING, )
+    quantity = models.IntegerField(u'交接数量', null=True, blank=True)
+    receiver = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING, verbose_name="签单人员", null=True)
+    received_at = models.DateTimeField(u'接收时间', null=True, blank=True, default=timezone.now)
+
+    def __str__(self):
+        return "%s %s" % (self.receiver_procedure, self.quantity)
+
+    class Meta:
+        verbose_name = "接收历史"
+        verbose_name_plural = "接收历史"
+
+
 class Receipt(models.Model):
     STATUS_CHOICES = (
         (common.RECEIPT_STATUS_UN_KNOW, '未开始'),

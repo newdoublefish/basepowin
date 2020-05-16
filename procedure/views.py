@@ -8,7 +8,7 @@ from rest_framework import status
 from django_filters.rest_framework import FilterSet
 import django_filters
 from .serializers import MopSerializer, ProcedureSerializer, ReceiptSerializer, TaskSerializer
-from .models import Mop, Procedure, Receipt, Task
+from .models import Mop, Procedure, Receipt, Task, ReceiveHistory
 from django.db import transaction
 from django.utils import timezone
 from . import common
@@ -109,6 +109,27 @@ class ProcedureViewSet(GenericViewSet,
     @action(detail=True, methods=['get'])
     def reset(self, request, pk=None):
         pass
+
+    @action(detail=True, methods=['post'])
+    def receive(self, request, pk=None):
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                instance = self.get_object()
+                instance.received_quantity = instance.received_quantity + request.data['quantity']
+                instance.save()
+
+                history = ReceiveHistory()
+                history.receiver_procedure = instance
+                history.receiver = request.user
+                history.quantity = request.data['quantity']
+                history.save()
+
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+        return Response({"status": "success", "data": self.get_serializer(instance).data}, status=status.HTTP_200_OK)
 
 
 def fill_receipt(receipt=None):
@@ -215,7 +236,7 @@ class TaskViewSet(GenericViewSet,
                   mixins.RetrieveModelMixin):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    filterset_fields = ('procedure','status')
+    filterset_fields = ('procedure', 'status')
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
