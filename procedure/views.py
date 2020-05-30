@@ -8,13 +8,14 @@ from rest_framework import status
 from django_filters.rest_framework import FilterSet
 import django_filters
 from .serializers import MopSerializer, ProcedureSerializer, ReceiptSerializer, TaskSerializer
-from .models import Mop, Procedure, Receipt, Task
+from .models import Mop, Procedure, Receipt, Task, ReceiveHistory
 from django.db import transaction
 from django.utils import timezone
 from . import common
 from xadmin.views.base import BaseAdminView, ModelAdminView, filter_hook, csrf_protect_m
 import collections
 from xadmin.views import Dashboard
+from django.views.decorators.csrf import csrf_exempt
 
 import json
 
@@ -109,6 +110,27 @@ class ProcedureViewSet(GenericViewSet,
     @action(detail=True, methods=['get'])
     def reset(self, request, pk=None):
         pass
+
+    @action(detail=True, methods=['put'])
+    def receive(self, request, pk=None):
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                instance = self.get_object()
+                instance.received_quantity = instance.received_quantity + request.data['quantity']
+                instance.save()
+
+                history = ReceiveHistory()
+                history.receiver_procedure = instance
+                history.receiver = request.user
+                history.quantity = request.data['quantity']
+                history.save()
+
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "data": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+        return Response({"status": "success", "data": self.get_serializer(instance).data}, status=status.HTTP_200_OK)
 
 
 def fill_receipt(receipt=None):
@@ -215,7 +237,27 @@ class TaskViewSet(GenericViewSet,
                   mixins.RetrieveModelMixin):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    filterset_fields = ('procedure','status')
+    filterset_fields = ('procedure', 'status')
+
+    def update(self, request, *args, **kwargs):
+        if self.get_object().status is not common.TASK_STATUS_UN_START:
+            return Response({"status": "error", "msg": "任务已开始,无法修改！"}, status=status.HTTP_400_BAD_REQUEST)
+        return super().update(request, args, kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        with transaction.atomic():
+            save_id = transaction.savepoint()
+            try:
+                if self.get_object().status is common.TASK_STATUS_FINISHED:
+                    task = self.get_object()
+                    procedure = task.procedure
+                    procedure.quantity = procedure.quantity - task.quantity
+                    procedure.save()
+            except Exception as e:
+                transaction.savepoint_rollback(save_id)
+                return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            transaction.savepoint_commit(save_id)
+            return super().destroy(request, args, kwargs)
 
     def create(self, request, *args, **kwargs):
         with transaction.atomic():
@@ -227,6 +269,7 @@ class TaskViewSet(GenericViewSet,
                 fill_task(instance)
             except Exception as e:
                 transaction.savepoint_rollback(save_id)
+                print(e)
                 return Response({"status": "error", "msg": str(e)}, status=status.HTTP_400_BAD_REQUEST)
             transaction.savepoint_commit(save_id)
         headers = self.get_success_headers(serializer.data)
@@ -236,6 +279,8 @@ class TaskViewSet(GenericViewSet,
     def start(self, request, pk=None):
         try:
             instance = self.get_object()
+            if instance.status is not common.TASK_STATUS_UN_START:
+                raise Exception("无法开始,当前状态为" + instance.get_status_display())
             instance.started_at = timezone.datetime.now()
             instance.status = common.TASK_STATUS_UNDER_GOING
             instance.save()
@@ -249,6 +294,8 @@ class TaskViewSet(GenericViewSet,
             save_id = transaction.savepoint()
             try:
                 instance = self.get_object()
+                if instance.status is not common.TASK_STATUS_UNDER_GOING:
+                    raise Exception("无法结束,当前状态为" + instance.get_status_display())
                 instance.procedure.quantity += instance.quantity
                 instance.procedure.save()
 
