@@ -15,6 +15,7 @@ from . import common
 from xadmin.views.base import BaseAdminView, ModelAdminView, filter_hook, csrf_protect_m
 import collections
 from xadmin.views import Dashboard
+from django.views.decorators.csrf import csrf_exempt
 
 import json
 
@@ -110,7 +111,7 @@ class ProcedureViewSet(GenericViewSet,
     def reset(self, request, pk=None):
         pass
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['put'])
     def receive(self, request, pk=None):
         with transaction.atomic():
             save_id = transaction.savepoint()
