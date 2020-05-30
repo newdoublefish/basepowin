@@ -5,7 +5,7 @@ from .views import MopViewSet, ProcedureViewSet, ReceiptViewSet, TaskViewSet
 router = routers.DefaultRouter()
 router.register("procedure/mop", MopViewSet)
 router.register("procedure/procedure", ProcedureViewSet)
-router.register("procedure/receipt", ReceiptViewSet)
+# router.register("procedure/receipt", ReceiptViewSet)
 router.register("procedure/task", TaskViewSet)
 
 urlpatterns = [
