@@ -11,7 +11,7 @@ django-import-export==1.1.0
 django-json-widget==0.1.1
 django-prettyjson==0.4.1
 django-rest-swagger==2.2.0
-djangorestframework==3.8.2
+djangorestframework==3.11.2
 et-xmlfile==1.0.1
 future==0.16.0
 httplib2==0.11.3
